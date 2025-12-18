@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>نظام المحفظة الاستثمارية المطور</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-deep: #060b13;
+            --gradient-start: #0f172a;
+            --panel-bg: #111827; 
+            --primary-yellow: #f0b90b;
+            --danger: #f6465d;
+            --success: #0ecb81;
+            --border-color: #1e293b;
+            --text-secondary: #94a3b8;
+        }
+
+        body {
+            font-family: 'Cairo', sans-serif;
+            background: radial-gradient(circle at top right, #1e293b 0%, #060b13 100%);
+            color: #fff;
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .app-wrapper {
+            width: 100%;
+            max-width: 450px;
+            background: rgba(17, 24, 39, 0.8);
+            backdrop-filter: blur(15px);
+            position: relative;
+            min-height: 100vh;
+            border-left: 1px solid rgba(255,255,255,0.05);
+            border-right: 1px solid rgba(255,255,255,0.05);
+            box-shadow: 0 0 40px rgba(0,0,0,0.6);
+        }
+
+        .main-content { padding: 25px; }
+        .header-title { text-align: center; font-weight: 700; font-size: 1.2rem; margin: 30px 0; color: #f8fafc; }
+
+        .field-label { display: block; font-size: 0.8rem; margin-bottom: 8px; color: var(--text-secondary); font-weight: 600; }
+
+        .rect-box {
+            background: rgba(30, 41, 59, 0.5); 
+            border: 1px solid var(--border-color);
+            border-radius: 10px; 
+            padding: 16px; 
+            margin-bottom: 20px;
+            font-weight: 700; 
+            font-size: 1rem; 
+            display: flex; 
+            align-items: center;
+        }
+ .btn-withdra {
+            width: 100%; 
+            background: linear-gradient(to bottom, #059669, #10b981);
+            color: #fff; border: none; padding: 16px; border-radius: 8px; font-weight: 700; cursor: pointer;
+        }
+
+
+        .btn-withdraw {
+            width: 100%; 
+            background: linear-gradient(to bottom, #f59e0b, #d97706);
+            color: #fff; border: none; padding: 16px; border-radius: 8px; font-weight: 700; cursor: pointer;
+        }
+
+        .btn-fail-main {
+            width: 100%; 
+            background: linear-gradient(to bottom, #f59e0b, #d97706);
+            color: #fff; border: none; padding: 16px; border-radius: 8px; font-weight: 700; margin-top: 10px; cursor: pointer;
+        }
+
+        /* لوحة التحكم - معدلة لتظهر فوق كل شيء */
+        .admin-panel {
+            position: fixed; 
+            top: 0; 
+            left: 50%; 
+            transform: translateX(-50%);
+            width: 100%; 
+            max-width: 450px; 
+            height: 100%;
+            background: #0f172a; 
+            z-index: 9999; /* رقم عالي جداً لتكون في المقدمة */
+            display: none; 
+            flex-direction: column; 
+            padding: 25px;
+            box-sizing: border-box;
+            overflow-y: auto;
+        }
+
+        .admin-title { font-size: 1.3rem; font-weight: 700; text-align: center; margin: 20px 0 30px; color: var(--primary-yellow); }
+        
+        .admin-form-group {
+            display: flex; 
+            flex-direction: column; 
+            margin-bottom: 20px; 
+            border-bottom: 1px solid #1e293b; 
+            padding-bottom: 10px;
+        }
+        .admin-form-group label { font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 8px; }
+        .admin-form-group input { 
+            background: transparent; 
+            border: none; 
+            color: #fff; 
+            font-size: 1.1rem; 
+            outline: none; 
+            font-family: 'Cairo';
+            padding: 5px 0;
+        }
+
+        .btn-settings { 
+            position: absolute; top: 15px; left: 15px; 
+            background: rgba(255,255,255,0.05); border: none; 
+            color: #475569; padding: 10px; border-radius: 8px; cursor: pointer; z-index: 500;
+        }
+
+        .modal-fail { position: fixed; inset: 0; background: rgba(0,0,0,0.9); display: none; justify-content: center; align-items: center; z-index: 10000; }
+        .modal-body { background: #1e293b; width: 85%; max-width: 320px; padding: 30px; border-radius: 20px; text-align: center; border: 1px solid #334155; }
+        
+        .history-log { border-top: 1px solid var(--border-color); padding-top: 20px; margin-top: 20px; }
+        .log-entry {
+            background: rgba(15, 23, 42, 0.6); border-right: 4px solid var(--danger);
+            border-radius: 8px; padding: 12px; margin-bottom: 10px; display: flex; justify-content: space-between;
+        }
+    </style>
+</head>
+<body>
+
+<div class="app-wrapper">
+    <button class="btn-settings" onclick="openAdmin()">⚙️</button>
+
+    <div class="main-content">
+        <div class="header-title"> المحفظة المجمعة للمشتركين</div>
+
+        <label class="field-label">المستفيد المعتمد</label>
+        <div class="rect-box" id="disp-name">صبحي عبد الحي</div>
+
+        <label class="field-label">وجهة التحويل (IBAN / Wallet)</label>
+        <div class="rect-box" id="disp-addr" style="font-size: 0.85rem; color: #64748b;">0x4edeca1d16773344b21317...</div>
+
+        <label class="field-label">إجمالي رأس المال الاستثماري</label>
+        <div class="rect-box" id="disp-sub" style="color: #f8fafc;">$4,000.00</div>
+
+        <label class="field-label">صافي الأرباح القابلة للسحب</label>
+        <div class="rect-box" id="disp-profit" style="color: var(--success); font-size: 1.2rem;">$58,137.00</div>
+
+        <div style="display: flex; align-items: center; gap: 10px;">
+           <div class="rect-box" style="flex: 1; margin-bottom: 0; color: var(--primary-yellow); justify-content: center;" id="disp-fee">BNB 7.00</div>
+           <label class="field-label" style="margin: 0; width: 80px;">رسوم التحرير الضريبية</label>
+        </div>
+
+        <button class="btn-withdra" onclick="handleWithdrawClick()">طلب سحب الأرباح</button>
+        <button class="btn-fail-main" onclick="forceFail()"> فشل التحويل</button>
+
+        <div class="history-log" id="withdrawLogs">
+            <div style="font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 10px;">:</div>
+        </div>
+    </div>
+
+    <div class="admin-panel" id="adminPanel">
+        <div class="admin-title">المحفظة الاستثمارية لجميع المستثمرين بعملة USDT</div
+        </div>
+        
+        <div class="admin-form-group">
+            <label>اسم المستفيد</label>
+            <input type="text" id="in-name" value="صبحي عبد الحي">
+        </div>
+        <div class="admin-form-group">
+            <label>العنوان / المحفظة</label>
+            <input type="text" id="in-addr" value="0x4edeca1d16773344b21317...">
+        </div>
+        <div class="admin-form-group">
+            <label>مبلغ الاشتراك</label>
+            <input type="text" id="in-sub" value="4,000.00">
+        </div>
+        <div class="admin-form-group">
+            <label>الأرباح</label>
+            <input type="text" id="in-profit" value="58,137.00">
+        </div>
+        <div class="admin-form-group">
+            <label>رسوم التحرير (BNB)</label>
+            <input type="text" id="in-fee" value="BNB 7.00">
+        </div>
+
+        <button class="btn-withdraw" style="margin-top: 20px;" onclick="saveChanges()"> فشل التحويل</button>
+        <button class="btn-fail-main" style="background: #1e293b; border: 1px solid #334155;" onclick="closeAdmin()">إغلاق</button>
+    </div>
+</div>
+
+<div class="modal-fail" id="failModal">
+    <div class="modal-body">
+        <div style="font-size: 40px; color: var(--danger); margin-bottom: 15px;">⚠️</div>
+        <div style="color: #fff; font-weight: 700; font-size: 1.2rem; margin-bottom: 10px;">فشل في معالجة الطلب</div>
+        <p style="color: var(--text-secondary); font-size: 0.85rem; line-height: 1.6;">تم رفض العملية بسبب قيود السيولة أو نقص في رسوم الشبكة. يرجى مراجعة الدعم الفني.</p>
+        <button style="width: 100%; padding: 12px; margin-top: 20px; border-radius: 8px; border: none; background: #334155; color: #fff; font-weight: 700;" onclick="closeModal()">إغلاق</button>
+    </div>
+</div>
+
+<script>
+    let withdrawAttempts = 0;
+
+    function openAdmin() {
+        document.getElementById('adminPanel').style.display = 'flex';
+    }
+
+    function closeAdmin() {
+        document.getElementById('adminPanel').style.display = 'none';
+    }
+
+    function saveChanges() {
+        document.getElementById('disp-name').innerText = document.getElementById('in-name').value;
+        document.getElementById('disp-addr').innerText = document.getElementById('in-addr').value;
+        document.getElementById('disp-sub').innerText = "$" + document.getElementById('in-sub').value;
+        document.getElementById('disp-profit').innerText = "$" + document.getElementById('in-profit').value;
+        document.getElementById('disp-fee').innerText = document.getElementById('in-fee').value;
+        closeAdmin();
+    }
+
+    function closeModal() { document.getElementById('failModal').style.display = 'none'; }
+    function triggerFail() { document.getElementById('failModal').style.display = 'flex'; }
+
+    function handleWithdrawClick() {
+        withdrawAttempts++;
+        addLogEntry();
+        if (withdrawAttempts >= 3) {
+            setTimeout(triggerFail, 600);
+        }
+    }
+
+    function forceFail() {
+        withdrawAttempts = 3;
+        addLogEntry();
+        triggerFail();
+    }
+
+    function addLogEntry() {
+        const logContainer = document.getElementById('withdrawLogs');
+        const now = new Date();
+        const timeStr = now.getHours() + ":" + now.getMinutes().toString().padStart(2, '0');
+        const entry = document.createElement('div');
+        entry.className = 'log-entry';
+        entry.innerHTML = `<div><span style="color:var(--danger); font-weight:bold;">خطأ في النظام</span><div style="font-size:0.7rem; color:#64748b;">عذراً، تعذر إتمام التحويل حالياً</div></div><span style="font-size:0.75rem; color:var(--text-secondary);">${timeStr}</span>`;
+        logContainer.insertBefore(entry, logContainer.childNodes[1]);
+    }
+</script>
+
+</body>
+</html>
+
